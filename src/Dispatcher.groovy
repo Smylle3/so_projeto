@@ -18,20 +18,20 @@ class Dispatcher {
         ResourceManager resources = new ResourceManager()
         FileSystemManager filesystem = new FileSystemManager()
 
-        List<Process> processes = Process.parseInput(processFile)
+        List<ProcessManager> processes = ProcessManager.parseInput(processFile)
 
         int clock = 0
 
         while (!scheduler.isDone(processes, clock)) {
             // adicionar processos que chegam neste instante
             processes
-                .findAll { Process p -> p.arrivalTime == clock }
-                .each { Process p ->
+                .findAll { ProcessManager p -> p.arrivalTime == clock }
+                .each { ProcessManager p ->
                     scheduler.addProcess(p)
                     println scheduler.formatProcessCreation(p)
                 }
 
-            Process next = scheduler.nextProcess()
+            ProcessManager next = scheduler.nextProcess()
 
             if (next != null) {
                 scheduler.runProcess(next, memory, resources, clock)

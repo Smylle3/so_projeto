@@ -12,7 +12,7 @@ class MemoryManager {
     final int USR_END   = 1023
 
     // Alocar bloco contíguo
-    boolean allocate(Process p) {
+    boolean allocate(ProcessManager p) {
         int start = (p.priority == 0) ? RT_START : USR_START
         int end   = (p.priority == 0) ? RT_END   : USR_END
 
@@ -34,13 +34,13 @@ class MemoryManager {
         return true
     }
 
-    void reserve(int start, Process p) {
+    void reserve(int start, ProcessManager p) {
         for (int i = 0; i < p.memoryBlocksNeeded; i++) {
             memory[start + i] = p.pid
         }
     }
 
-    void free(Process p) {
+    void free(ProcessManager p) {
         memory = memory.collect { it == p.pid ? -1 : it }
     }
 

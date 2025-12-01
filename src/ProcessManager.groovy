@@ -1,4 +1,4 @@
-class Process {
+class ProcessManager {
 
     int pid
     int arrivalTime
@@ -10,19 +10,16 @@ class Process {
     int memoryOffset = -1
 
     boolean needsScanner
-    int printerId        // 0 = nenhum | 1–2 = impressoras
+    int printerId
     boolean needsModem
-    int sataId           // 0 = nenhum | 1–3 = discos
+    int sataId
 
-    int waitingTime = 0  // usado para aging
+    int waitingTime = 0
 
-    static Process fromLine(String line, int pid) {
-        // Exemplo de linha:
-        // <tempo>, <prioridade>, <cpu>, <mem>, <printer>, <scanner>, <modem>, <sata>
-
+    static ProcessManager fromLine(String line, int pid) {
         def parts = line.split(',').collect { it.trim() }
 
-        return new Process(
+        return new ProcessManager(
             pid: pid,
             arrivalTime: parts[0] as int,
             priority: parts[1] as int,
@@ -37,17 +34,28 @@ class Process {
         )
     }
 
-    // Chamado quando o processo começa a executar
+    // >>>>>> ADICIONE ISSO <<<<<<
+    static List<ProcessManager> parseInput(File file) {
+        List<ProcessManager> list = []
+        int pidCounter = 0
+
+        file.eachLine { line ->
+            if (line.trim()) {
+                list << ProcessManager.fromLine(line, pidCounter++)
+            }
+        }
+
+        return list
+    }
+
     void printStart() {
         println "P${pid} STARTED"
     }
 
-    // Simula uma instrução
     void printInstruction(int step) {
         println "P${pid} instruction ${step}"
     }
 
-    // Quando finalizar
     void printEnd() {
         println "P${pid} return SIGINT"
     }

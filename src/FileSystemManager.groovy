@@ -27,7 +27,7 @@ class FileSystemManager {
         }
     }
 
-    void executeOperations(File f, List<Process> processes) {
+    void executeOperations(File f, List<ProcessManager> processes) {
         def lines = f.readLines()
         int occupied = lines[1] as int
         def ops = lines.drop(occupied + 2)
@@ -39,7 +39,7 @@ class FileSystemManager {
             int op = parts[1] as int
             String name = parts[2]
 
-            Process p = processes.find { it.pid == pid }
+            ProcessManager p = processes.find { it.pid == pid }
 
             if (!p) {
                 println "Operação ${idx+1} => Falha"
@@ -56,7 +56,7 @@ class FileSystemManager {
         }
     }
 
-    void createFile(Process p, String name, int size, int opNum) {
+    void createFile(ProcessManager p, String name, int size, int opNum) {
         int start = firstFit(size)
 
         if (start < 0) {
@@ -73,7 +73,7 @@ class FileSystemManager {
         println "O processo ${p.pid} criou o arquivo ${name} (blocos ${start} a ${start+size-1})."
     }
 
-    void deleteFile(Process p, String name, int opNum) {
+    void deleteFile(ProcessManager p, String name, int opNum) {
         if (!files.containsKey(name)) {
             println "Operação ${opNum} => Falha"
             println "O arquivo ${name} não existe."
