@@ -32,7 +32,7 @@ class Scheduler {
     }
 
     // Retorna o próximo processo a ser executado
-    Process getNextProcess() {
+    Process nextProcess() {
         // Tempo real sempre vem antes
         if (!realtimeQueue.isEmpty()) {
             return realtimeQueue.remove(0)
