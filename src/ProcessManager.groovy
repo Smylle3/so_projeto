@@ -16,6 +16,7 @@ class ProcessManager {
 
     int waitingTime = 0
 
+
     static ProcessManager fromLine(String line, int pid) {
         def parts = line.split(',').collect { it.trim() }
 

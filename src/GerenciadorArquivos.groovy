@@ -29,7 +29,7 @@ class GerenciadorArquivos {
         }
     }
 
-    void executarOperacoes(File arquivo, List<ProcessManager> processos) {
+    void executarOperacoes(File arquivo, List<GerenciadorProcessos> processos) {
         def linhas = arquivo.readLines()
         int quantidadeOcupada = linhas[1] as int
         def operacoes = linhas.drop(quantidadeOcupada + 2)
@@ -41,7 +41,7 @@ class GerenciadorArquivos {
             int tipoOperacao = partes[1] as int
             String nomeArquivo = partes[2]
 
-            ProcessManager processo = processos.find { it.pid == pid }
+            GerenciadorProcessos processo = processos.find { it.processoId == pid }
 
             if (!processo) {
                 println "Operação ${indice + 1} => Falha"
@@ -59,26 +59,26 @@ class GerenciadorArquivos {
         }
     }
 
-    void criarArquivo(ProcessManager processo, String nome, int tamanho, int numeroOp) {
+    void criarArquivo(GerenciadorProcessos processo, String nome, int tamanho, int numeroOp) {
         int inicio = firstFit(tamanho)
 
         if (inicio < 0) {
             println "Operação ${numeroOp} => Falha"
-            println "O processo ${processo.pid} não pode criar o arquivo ${nome} (falta de espaço)."
+            println "O processo ${processo.processoId} não pode criar o arquivo ${nome} (falta de espaço)."
             return
         }
 
-        arquivos[nome] = [start: inicio, size: tamanho, owner: processo.pid]
+        arquivos[nome] = [start: inicio, size: tamanho, owner: processo.processoId]
 
         (0..<tamanho).each { i ->
             disco[inicio + i] = nome.charAt(0) as int
         }
 
         println "Operação ${numeroOp} => Sucesso"
-        println "O processo ${processo.pid} criou o arquivo ${nome} (blocos ${inicio} a ${inicio + tamanho - 1})."
+        println "O processo ${processo.processoId} criou o arquivo ${nome} (blocos ${inicio} a ${inicio + tamanho - 1})."
     }
 
-    void deletarArquivo(ProcessManager processo, String nome, int numeroOp) {
+    void deletarArquivo(GerenciadorProcessos processo, String nome, int numeroOp) {
         if (!arquivos.containsKey(nome)) {
             println "Operação ${numeroOp} => Falha"
             println "O arquivo ${nome} não existe."
@@ -86,11 +86,11 @@ class GerenciadorArquivos {
         }
 
         def meta = arquivos[nome]
-        boolean permitido = (processo.priority == 0) || (meta.owner == processo.pid)
+        boolean permitido = (processo.prioridade == 0) || (meta.owner == processo.processoId)
 
         if (!permitido) {
             println "Operação ${numeroOp} => Falha"
-            println "O processo ${processo.pid} não pode deletar o arquivo ${nome}."
+            println "O processo ${processo.processoId} não pode deletar o arquivo ${nome}."
             return
         }
 
@@ -101,7 +101,7 @@ class GerenciadorArquivos {
         arquivos.remove(nome)
 
         println "Operação ${numeroOp} => Sucesso"
-        println "O processo ${processo.pid} deletou o arquivo ${nome}."
+        println "O processo ${processo.processoId} deletou o arquivo ${nome}."
     }
 
     int firstFit(int tamanho) {
@@ -113,8 +113,13 @@ class GerenciadorArquivos {
     }
 
     void imprimirMapaDoDisco() {
-        println '\nMapa de ocupação do disco:'
-        println disco.collect { it == 0 ? '0' : (char) it }.join(' ')
+        println '\nMapa de ocupação do disco:\n'
+        disco.each { print("____")}
+        print("_\n")
+        disco.each { it == 0 ? print("| 0 "): print("| "+(char)it+" ") }
+        print("|\n")
+        disco.each { print("____")}
+        print("\n")
     }
 
 }

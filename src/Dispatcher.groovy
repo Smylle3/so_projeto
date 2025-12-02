@@ -13,42 +13,47 @@ class Dispatcher {
         File processFile = new File(args[0])
         File fileOpsFile = new File(args[1])
 
-        Scheduler scheduler = new Scheduler()
-        MemoryManager memory = new MemoryManager()
-        ResourceManager resources = new ResourceManager()
-        FileSystemManager filesystem = new FileSystemManager()
+        println "Conteúdo completo:\n$processFile.text"
 
-        List<ProcessManager> processes = ProcessManager.parseInput(processFile)
+        println "\n\nConteúdo completo:\n$fileOpsFile.text"
+
+        Escalonador scheduler = new Escalonador()
+        GerenciadorMemoria memory = new GerenciadorMemoria()
+        GerenciadorRecursos resources = new GerenciadorRecursos()
+        GerenciadorArquivos filesystem = new GerenciadorArquivos()
+
+        List<GerenciadorProcessos> processes = GerenciadorProcessos.processarArquivo(processFile)
 
         int clock = 0
 
         while (!scheduler.isDone(processes, clock)) {
             // adicionar processos que chegam neste instante
             processes
-                .findAll { ProcessManager p -> p.arrivalTime == clock }
-                .each { ProcessManager p ->
-                    scheduler.addProcess(p)
+                .findAll { GerenciadorProcessos p -> p.tempoChegada == clock }
+                .each { GerenciadorProcessos p ->
+                    scheduler.criarProcesso(p)
                     println scheduler.formatProcessCreation(p)
                 }
 
-            ProcessManager next = scheduler.nextProcess()
+            GerenciadorProcessos next = scheduler.carregarProcesso()
 
             if (next != null) {
                 scheduler.runProcess(next, memory, resources, clock)
+                clock = clock + next.tempoProcessamento
             }
-            //println "Clock: ${clock}"
+            println "Clock: ${clock}"
 
             clock++
         }
 
         // Carregar estado inicial do disco
-        filesystem.loadInitialState(fileOpsFile)
+        filesystem.carregaEstadoInicial(fileOpsFile)
 
         // Executar operações
-        filesystem.executeOperations(fileOpsFile, scheduler.allProcesses)
+        filesystem.executarOperacoes(fileOpsFile, scheduler.listaProcessos)
 
         // Imprimir mapa final do disco
-        filesystem.printDiskMap()
+        filesystem.imprimirMapaDoDisco()
     }
 
 }
