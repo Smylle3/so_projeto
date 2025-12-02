@@ -36,11 +36,15 @@ class Dispatcher {
             if (next != null) {
                 scheduler.runProcess(next, memory, resources, clock)
             }
+            //println "Clock: ${clock}"
 
             clock++
         }
 
-        // Executar operações de arquivos
+        // Carregar estado inicial do disco
+        filesystem.loadInitialState(fileOpsFile)
+
+        // Executar operações
         filesystem.executeOperations(fileOpsFile, scheduler.allProcesses)
 
         // Imprimir mapa final do disco

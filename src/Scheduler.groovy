@@ -27,9 +27,9 @@ class Scheduler {
             return realtimeQueue.remove(0)
         }
 
-        for (int pr = 1; pr <= 5; pr++) {
-            if (!userQueues[pr].isEmpty()) {
-                return userQueues[pr].remove(0)
+        for (int priority = 1; priority <= 5; priority++) {
+            if (!userQueues[priority].isEmpty()) {
+                return userQueues[priority].remove(0)
             }
         }
         return null
@@ -78,9 +78,6 @@ class Scheduler {
         )
     }
 
-    // ---------------------------------------------------------
-    // 🔥 AQUI — método completo runProcess()
-    // ---------------------------------------------------------
     void runProcess(
         ProcessManager p,
         MemoryManager memory,

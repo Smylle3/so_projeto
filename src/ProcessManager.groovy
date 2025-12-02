@@ -34,7 +34,6 @@ class ProcessManager {
         )
     }
 
-    // >>>>>> ADICIONE ISSO <<<<<<
     static List<ProcessManager> parseInput(File file) {
         List<ProcessManager> list = []
         int pidCounter = 0

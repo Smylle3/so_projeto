@@ -42,8 +42,8 @@ class FileSystemManager {
             ProcessManager p = processes.find { it.pid == pid }
 
             if (!p) {
-                println "Operação ${idx+1} => Falha"
-                println "O processo ${pid} não existe."
+                println "Operacao ${idx+1} => Falha"
+                println "O processo ${pid} nao existe."
                 return
             }
 
@@ -60,8 +60,8 @@ class FileSystemManager {
         int start = firstFit(size)
 
         if (start < 0) {
-            println "Operação ${opNum} => Falha"
-            println "O processo ${p.pid} não pode criar o arquivo ${name} (falta de espaço)."
+            println "Operacao ${opNum} => Falha"
+            println "O processo ${p.pid} nao pode criar o arquivo ${name} (falta de espaco)."
             return
         }
 
@@ -69,14 +69,14 @@ class FileSystemManager {
 
         (0..<size).each { i -> disk[start + i] = name.charAt(0) as int }
 
-        println "Operação ${opNum} => Sucesso"
+        println "Operacao ${opNum} => Sucesso"
         println "O processo ${p.pid} criou o arquivo ${name} (blocos ${start} a ${start+size-1})."
     }
 
     void deleteFile(ProcessManager p, String name, int opNum) {
         if (!files.containsKey(name)) {
-            println "Operação ${opNum} => Falha"
-            println "O arquivo ${name} não existe."
+            println "Operacao ${opNum} => Falha"
+            println "O arquivo ${name} nao existe."
             return
         }
 
@@ -85,8 +85,8 @@ class FileSystemManager {
         boolean allowed = (p.priority == 0) || (meta.owner == p.pid)
 
         if (!allowed) {
-            println "Operação ${opNum} => Falha"
-            println "O processo ${p.pid} não pode deletar o arquivo ${name}."
+            println "Operacao ${opNum} => Falha"
+            println "O processo ${p.pid} nao pode deletar o arquivo ${name}."
             return
         }
 
@@ -94,7 +94,7 @@ class FileSystemManager {
 
         files.remove(name)
 
-        println "Operação ${opNum} => Sucesso"
+        println "Operacao ${opNum} => Sucesso"
         println "O processo ${p.pid} deletou o arquivo ${name}."
     }
 
@@ -107,7 +107,7 @@ class FileSystemManager {
     }
 
     void printDiskMap() {
-        println '\nMapa de ocupação do disco:'
+        println '\nMapa de ocupacao do disco:'
         println disk.collect { it == 0 ? '0' : (char)it }.join(' ')
     }
 
