@@ -22,24 +22,41 @@ class Dispatcher {
         GerenciadorRecursos resources = new GerenciadorRecursos()
         GerenciadorArquivos filesystem = new GerenciadorArquivos()
 
-        List<GerenciadorProcessos> processes = GerenciadorProcessos.processarArquivo(processFile)
-
+        List<GerenciadorProcessos> processos = GerenciadorProcessos.processarArquivo(processFile)
+        List<GerenciadorProcessos> processosEmEspera = []
         int clock = 0
 
-        while (!scheduler.isDone(processes, clock)) {
+        while (!scheduler.isDone(processos, clock)) {
             // adicionar processos que chegam neste instante
-            processes
-                .findAll { GerenciadorProcessos p -> p.tempoChegada == clock }
-                .each { GerenciadorProcessos p ->
-                    scheduler.criarProcesso(p)
-                    println scheduler.formatProcessCreation(p)
+
+            if (processosEmEspera.size() > 0){
+                processosEmEspera.each { GerenciadorProcessos processo ->
+                    if (scheduler.listaProcessos.size() <= 99){
+                        scheduler.criarProcesso(processo, memory, resources)
+                        println scheduler.formatProcessCreation(processo)
+                    }
                 }
+            }
+
+            processos
+                .findAll { GerenciadorProcessos processo -> processo.tempoChegada == clock }
+                .each { GerenciadorProcessos processo ->
+                    if (scheduler.listaProcessos.size() <= 99){
+                        scheduler.criarProcesso(processo, memory, resources)
+                        println scheduler.formatProcessCreation(processo)
+                    }
+                    else{
+                        processosEmEspera.add(processo)
+                    }
+
+                }
+
+
 
             GerenciadorProcessos next = scheduler.carregarProcesso()
 
             if (next != null) {
                 scheduler.runProcess(next, memory, resources, clock)
-                clock = clock + next.tempoProcessamento
             }
             println "Clock: ${clock}"
 

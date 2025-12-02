@@ -16,7 +16,30 @@ class Escalonador {
         ]
         this.listaProcessos  = []
     }
-    void criarProcesso(GerenciadorProcessos processo) {
+    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memory, GerenciadorRecursos resources) {
+
+        // -----------------------------
+        // ALOCAÇÃO DE MEMÓRIA
+        // -----------------------------
+        if (processo.offsetMemoria == -1) {
+            boolean ok = memory.alocarBlocos(processo)
+            if (!ok) {
+                // sem memória → processo volta pra fila
+                //requeue(processo)
+                return
+            }
+        }
+
+        // -----------------------------
+        // ALOCAÇÃO DE RECURSOS
+        // -----------------------------
+        if (!resources.allocate(processo)) {
+            // não conseguiu I/O → devolve para fila
+            //requeue(processo)
+            return
+        }
+
+        // inserindo processo na fila
         listaProcessos << processo
 
         if (processo.prioridade == 0) {
@@ -89,26 +112,7 @@ class Escalonador {
             GerenciadorRecursos resources,
             int clock
     ) {
-        // -----------------------------
-        // ALOCAÇÃO DE MEMÓRIA
-        // -----------------------------
-        if (processo.offsetMemoria == -1) {
-            boolean ok = memory.alocarBlocos(processo)
-            if (!ok) {
-                // sem memória → processo volta pra fila
-                requeue(processo)
-                return
-            }
-        }
 
-        // -----------------------------
-        // ALOCAÇÃO DE RECURSOS
-        // -----------------------------
-        if (!resources.allocate(processo)) {
-            // não conseguiu I/O → devolve para fila
-            requeue(processo)
-            return
-        }
 
         // Marca início
         processo.printStart()
@@ -128,11 +132,12 @@ class Escalonador {
             processo.printEnd()
             memory.free(processo)
             resources.free(processo)
+            listaProcessos = listaProcessos.findAll { GerenciadorProcessos processos -> processos.processoId != processo.processoId}
             return
         }
 
         // NÃO TERMINOU → rebaixa prioridade (se user)
-        demote(processo)
+//        demote(processo)
 
         // reaplica aging global
         balanceamentoDeProcessos()
