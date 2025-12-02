@@ -13,9 +13,9 @@ class Dispatcher {
         File processFile = new File(args[0])
         File fileOpsFile = new File(args[1])
 
-        println "Conteúdo completo:\n$processFile.text"
-
-        println "\n\nConteúdo completo:\n$fileOpsFile.text"
+//        println "Conteúdo completo:\n$processFile.text"
+//
+//        println "\n\nConteúdo completo:\n$fileOpsFile.text"
 
         Escalonador scheduler = new Escalonador()
         GerenciadorMemoria memory = new GerenciadorMemoria()
@@ -29,11 +29,10 @@ class Dispatcher {
         while (!scheduler.isDone(processos, clock)) {
             // adicionar processos que chegam neste instante
 
-            if (processosEmEspera.size() > 0){
-                processosEmEspera.each { GerenciadorProcessos processo ->
+            if (scheduler.listaProcessosEmAtrasado.size() > 0){
+                scheduler.listaProcessosEmAtrasado.each { GerenciadorProcessos processo ->
                     if (scheduler.listaProcessos.size() <= 99){
                         scheduler.criarProcesso(processo, memory, resources)
-                        println scheduler.formatProcessCreation(processo)
                     }
                 }
             }
@@ -43,10 +42,9 @@ class Dispatcher {
                 .each { GerenciadorProcessos processo ->
                     if (scheduler.listaProcessos.size() <= 99){
                         scheduler.criarProcesso(processo, memory, resources)
-                        println scheduler.formatProcessCreation(processo)
                     }
                     else{
-                        processosEmEspera.add(processo)
+                        scheduler.listaProcessosEmAtrasado.add(processo)
                     }
 
                 }

@@ -3,7 +3,7 @@ class Escalonador {
     Map<Integer, List<GerenciadorProcessos>> fileUsuario
     Map<Integer, Integer> quantumTable
 
-    List<GerenciadorProcessos> listaProcessos
+    List<GerenciadorProcessos> listaProcessos,listaProcessosEmAtrasado
 
     Escalonador() {
         this.fileTempoReal  = []
@@ -15,6 +15,7 @@ class Escalonador {
                 1: 6, 2: 5, 3: 4, 4: 3, 5: 2
         ]
         this.listaProcessos  = []
+        this.listaProcessosEmAtrasado = []
     }
     void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memory, GerenciadorRecursos resources) {
 
@@ -26,6 +27,7 @@ class Escalonador {
             if (!ok) {
                 // sem memória → processo volta pra fila
                 //requeue(processo)
+
                 return
             }
         }
@@ -36,8 +38,11 @@ class Escalonador {
         if (!resources.allocate(processo)) {
             // não conseguiu I/O → devolve para fila
             //requeue(processo)
+            if (listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 0 )
+                this.listaProcessosEmAtrasado.add(processo)
             return
         }
+        println this.formatProcessCreation(processo)
 
         // inserindo processo na fila
         listaProcessos << processo
@@ -76,11 +81,11 @@ class Escalonador {
         }
     }
     
-    void demote(GerenciadorProcessos processo) {
-        if (processo.prioridade > 0 && processo.prioridade < 5) {
-            processo.prioridade++
-        }
-    }
+//    void demote(GerenciadorProcessos processo) {
+//        if (processo.prioridade > 0 && processo.prioridade < 5) {
+//            processo.prioridade++
+//        }
+//    }
 
     int getQuantum(GerenciadorProcessos processo) {
         if (processo.prioridade == 0) return Integer.MAX_VALUE
@@ -92,15 +97,26 @@ class Escalonador {
     }
 
     String formatProcessCreation(GerenciadorProcessos processo) {
+        GerenciadorMemoria memoria = new GerenciadorMemoria()
         return String.format(
-                'Process P%-3d created | arrival=%-3d prio=%-2d cpu=%-3d mem=%-3d printer=%-2d scanner=%-2d modem=%-2d sata=%-2d',
+                'dispatcher =>\n' +
+                '    PID: %-3d\n' +
+                '    offset: %-3d\n' +
+                '    blocks: %-3d\n' +
+                '    priority: %-2d\n' +
+                '    time: %-3d\n' +
+                '    scanners: %-2d\n' +
+                '    printers: %-2d\n' +
+                '    modems: %-2d\n' +
+                '    sata: %-2d\n',
+                //'Process P%-3d created | arrival=%-3d prio=%-2d cpu=%-3d mem=%-3d printer=%-2d scanner=%-2d modem=%-2d sata=%-2d',
                 processo.processoId,
-                processo.tempoChegada,
+                processo.prioridade == 0 ? memoria.ponteiroRT : memoria.ponteiroUSR,
+                processo.blocosDeMemoriaAlocados,
                 processo.prioridade,
                 processo.tempoProcessamento,
-                processo.blocosDeMemoriaAlocados,
-                processo.impressoraId,
                 processo.scannerAlocado ? 1 : 0,
+                processo.impressoraId,
                 processo.modemAlocado ? 1 : 0,
                 processo.sataId
         )
