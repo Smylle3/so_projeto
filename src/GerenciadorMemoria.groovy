@@ -33,6 +33,7 @@ class GerenciadorMemoria {
                 return true
             }
         }
+
         int [] memoriaParcial = processo.prioridade == 0 ? memoria[0..start-1] : memoria[64..start-1]
         if(processo.blocosDeMemoriaAlocados > (end - start) && memoriaParcial.findAll {   it == -1}.size() >= processo.blocosDeMemoriaAlocados){
              start = (processo.prioridade == 0) ? 0 : 64
