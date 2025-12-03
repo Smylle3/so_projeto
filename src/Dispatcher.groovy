@@ -51,7 +51,7 @@ class Dispatcher {
             if (processoQueSeraExecutado != null) {
                 escalonadorInstancia.executandoProcesso(processoQueSeraExecutado, memoriaInstancia, recursosInstancia)
             }
-            println "Clock: ${clock}"
+//            println "Clock: ${clock}"
 
             clock++
         }

@@ -34,10 +34,34 @@ class GerenciadorMemoria {
             }
         }
 
-        int [] memoriaParcial = processo.prioridade == 0 ? memoria[0..start-1] : memoria[64..start-1]
-        if(processo.blocosDeMemoriaAlocados > (end - start) && memoriaParcial.findAll {   it == -1}.size() >= processo.blocosDeMemoriaAlocados){
+        int[] memoriaParcial
+        int[] memoriaParcial2
+
+        if (processo.prioridade == 0) {
+            memoriaParcial = Arrays.copyOfRange(memoria, 0, start)
+            memoriaParcial2 = Arrays.copyOfRange(memoria, start-1, 64)
+        } else {
+            memoriaParcial = Arrays.copyOfRange(memoria, 64, start)
+            memoriaParcial2 = Arrays.copyOfRange(memoria, start, 1024)
+        }
+        int memoriaDisponivel1 = memoriaParcial2.findAll {   it == -1}.size()
+        int memoriaDisponivel =  memoriaParcial.findAll {   it == -1}.size()
+        int memoriaTotal = memoriaDisponivel1+memoriaDisponivel
+        if((processo.blocosDeMemoriaAlocados > (end - start) && memoriaDisponivel>= processo.blocosDeMemoriaAlocados)){
              start = (processo.prioridade == 0) ? 0 : 64
              end   = (processo.prioridade == 0) ? RT_END   : USR_END
+
+            for (int i = start; i <= end - processo.blocosDeMemoriaAlocados + 1; i++) {
+                if (espacoEstaDisponivel(i, processo.blocosDeMemoriaAlocados)) {
+                    reservarEspaco(i, processo)
+                    processo.offsetMemoria = i
+                    return true
+                }
+            }
+        }
+        if ((processo.prioridade != 0 && memoriaTotal >=960) || (processo.prioridade == 0 && memoriaTotal >=62)){
+            start = (processo.prioridade == 0) ? 0 : 64
+            end   = (processo.prioridade == 0) ? RT_END   : USR_END
 
             for (int i = start; i <= end - processo.blocosDeMemoriaAlocados + 1; i++) {
                 if (espacoEstaDisponivel(i, processo.blocosDeMemoriaAlocados)) {

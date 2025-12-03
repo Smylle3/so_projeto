@@ -27,21 +27,24 @@ class Escalonador {
             this.listaArquivoProcessos = ListaArquivoProcessos.findAll{ GerenciadorProcessos processos -> processos.processoId != processo.processoId}
             listaDeProcessosCancelados.add(processo)
             return
-        }else if ((processo.prioridade == 1)&&(processo.blocosDeMemoriaAlocados < 1 ||processo.blocosDeMemoriaAlocados > 960 )){
+        }else if ((processo.prioridade != 0)&&(processo.blocosDeMemoriaAlocados < 1 ||processo.blocosDeMemoriaAlocados > 960 )){
             println("Processo bloqueado, quantidade de blocos não pode ser atentida")
             this.listaArquivoProcessos = ListaArquivoProcessos.findAll{ GerenciadorProcessos processos -> processos.processoId != processo.processoId}
             listaDeProcessosCancelados.add(processo)
+            return
         }
-        // ALOCAÇÃO DE MEMÓRIA
+        // alocação de memoria
         if (processo.offsetMemoria == -1) {
             boolean ok = memoriaInstancia.alocarBlocos(processo)
             if (!ok) {
                 // sem memória → processo volta pra fila
+                if (listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 0 )
+                    this.listaProcessosEmAtrasado.add(processo)
                 return
             }
         }
 
-        // ALOCAÇÃO DE RECURSOS
+        // alocação de recursos
         if (!recursosInstancia.tentandoAlocar(processo)) {
             // não conseguiu I/O → devolve para fila
             if (listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 0 )
@@ -136,7 +139,7 @@ class Escalonador {
         // troca de contexto
         int[]  contextoDeMemoria =  memoriaInstancia.memoria.findAll { int bloco -> bloco == processo.processoId}
 
-        // Marca início
+        // marca início
         processo.printStart()
 
         int quantum = retornaTempoQuantum(processo)
@@ -149,7 +152,7 @@ class Escalonador {
             used++
         }
 
-        // TERMINOU?
+        // terminou?
         if (processo.tempoRestante <= 0) {
             processo.printEnd()
             memoriaInstancia.liberarBlocos(processo)

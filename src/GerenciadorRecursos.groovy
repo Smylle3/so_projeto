@@ -16,28 +16,28 @@ class GerenciadorRecursos {
     boolean tentandoAlocar(GerenciadorProcessos processo) {
         if (processo.scannerAlocado && !scanner.tryAcquire())
             return false
-        else
+        else if (processo.scannerAlocado)
             scannerIO = processo.processoId
         
         if (processo.impressoraId > 0 && !impressoras[processo.impressoraId - 1].tryAcquire()) {
             if (processo.scannerAlocado)
                 scanner.release()
             return false
-        }else{
+        }else if (processo.impressoraId > 0){
             impressoraIO[processo.impressoraId - 1] = processo.processoId
         }
         
         if (processo.modemAlocado && !modem.tryAcquire()) {
             releaseAcquired(processo, true, true, false, false)
             return false
-        }else{
+        }else if(processo.modemAlocado ){
             modemIO = processo.processoId
         }
         
         if (processo.sataId > 0 && !sata[processo.sataId - 1].tryAcquire()) {
             releaseAcquired(processo, true, true, true, false)
             return false
-        }else{
+        }else if(processo.sataId > 0){
             sataIO[processo.sataId - 1] = processo.processoId
         }
 
