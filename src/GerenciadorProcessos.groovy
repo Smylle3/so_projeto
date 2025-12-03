@@ -61,6 +61,7 @@ class GerenciadorProcessos {
     }
 
     void printStart() {
+        println("process ${processoId} =>")
         println "P${processoId} STARTED"
     }
 
@@ -69,7 +70,7 @@ class GerenciadorProcessos {
     }
 
     void printEnd() {
-        println "P${processoId} return SIGINT"
+        println "P${processoId} return SIGINT\n"
     }
 
 

@@ -19,8 +19,8 @@ class GerenciadorMemoria {
         int end   = (processo.prioridade == 0) ? RT_END   : USR_END
 
         for (int i = start; i <= end - processo.blocosDeMemoriaAlocados + 1; i++) {
-            if (isFreeRange(i, processo.blocosDeMemoriaAlocados)) {
-                reserve(i, processo)
+            if (espacoEstaDisponivel(i, processo.blocosDeMemoriaAlocados)) {
+                reservarEspaco(i, processo)
                 processo.offsetMemoria = i
                 return true
             }
@@ -29,31 +29,31 @@ class GerenciadorMemoria {
         return false
     }
 
-    boolean isFreeRange(int start, int size) {
+    boolean espacoEstaDisponivel(int start, int size) {
         for (int i = 0; i < size; i++) {
             if (memoria[start + i] != -1) return false
         }
         return true
     }
 
-    void reserve(int start, GerenciadorProcessos p) {
-        for (int i = 0; i < p.blocosDeMemoriaAlocados; i++) {
-            memoria[start + i] = p.processoId
+    void reservarEspaco(int start, GerenciadorProcessos processo) {
+        for (int i = 0; i < processo.blocosDeMemoriaAlocados; i++) {
+            memoria[start + i] = processo.processoId
         }
-        if (p.prioridade == 0){
-            ponteiroRT += p.blocosDeMemoriaAlocados
+        if (processo.prioridade == 0){
+            ponteiroRT += processo.blocosDeMemoriaAlocados
         }else{
-            ponteiroUSR += p.blocosDeMemoriaAlocados
+            ponteiroUSR += processo.blocosDeMemoriaAlocados
         }
     }
 
-    void free(GerenciadorProcessos p) {
-        if (p.prioridade == 0){
-            ponteiroRT = memoria.findIndexOf { it == p.processoId }
+    void liberarBlocos(GerenciadorProcessos processo) {
+        if (processo.prioridade == 0){
+            ponteiroRT = memoria.findIndexOf { it == processo.processoId }
         }else{
-            ponteiroUSR = memoria.findIndexOf { it == p.processoId }
+            ponteiroUSR = memoria.findIndexOf { it == processo.processoId }
         }
-        memoria = memoria.collect { it == p.processoId ? -1 : it }
+        memoria = memoria.collect { it == processo.processoId ? -1 : it }
 
 
     }

@@ -10,29 +10,26 @@ class Dispatcher {
             return
         }
 
-        File processFile = new File(args[0])
-        File fileOpsFile = new File(args[1])
+        File arquivoProcessos = new File(args[0])
+        File arquivoOperacoesArquivos = new File(args[1])
 
-//        println "Conteúdo completo:\n$processFile.text"
-//
-//        println "\n\nConteúdo completo:\n$fileOpsFile.text"
 
-        Escalonador scheduler = new Escalonador()
-        GerenciadorMemoria memory = new GerenciadorMemoria()
-        GerenciadorRecursosAvancado resources = new GerenciadorRecursosAvancado()
-        GerenciadorArquivos filesystem = new GerenciadorArquivos()
+        Escalonador escalonadorInstancia = new Escalonador()
+        GerenciadorMemoria memoriaInstancia = new GerenciadorMemoria()
+        GerenciadorRecursos recursosInstancia = new GerenciadorRecursos()
+        GerenciadorArquivos sistemaArquivosInstancia = new GerenciadorArquivos()
 
-        List<GerenciadorProcessos> processos = GerenciadorProcessos.processarArquivo(processFile)
-        List<GerenciadorProcessos> processosEmEspera = []
+        List<GerenciadorProcessos> processos = GerenciadorProcessos.processarArquivo(arquivoProcessos)
+
         int clock = 0
 
-        while (!scheduler.isDone(processos, clock)) {
+        while (!escalonadorInstancia.jaAcabou(processos)) {
             // adicionar processos que chegam neste instante
 
-            if (scheduler.listaProcessosEmAtrasado.size() > 0){
-                scheduler.listaProcessosEmAtrasado.each { GerenciadorProcessos processo ->
-                    if (scheduler.listaProcessos.size() <= 99){
-                        scheduler.criarProcesso(processo, memory, resources)
+            if (escalonadorInstancia.listaProcessosEmAtrasado.size() > 0){
+                escalonadorInstancia.listaProcessosEmAtrasado.each { GerenciadorProcessos processo ->
+                    if (escalonadorInstancia.listaProcessos.size() <= 99){
+                        escalonadorInstancia.criarProcesso(processo, memoriaInstancia, recursosInstancia)
                     }
                 }
             }
@@ -40,35 +37,28 @@ class Dispatcher {
             processos
                 .findAll { GerenciadorProcessos processo -> processo.tempoChegada == clock }
                 .each { GerenciadorProcessos processo ->
-                    if (scheduler.listaProcessos.size() <= 99){
-                        scheduler.criarProcesso(processo, memory, resources)
+                    if (escalonadorInstancia.listaProcessos.size() <= 99){
+                        escalonadorInstancia.criarProcesso(processo, memoriaInstancia, recursosInstancia)
                     }
                     else{
-                        scheduler.listaProcessosEmAtrasado.add(processo)
+                        escalonadorInstancia.listaProcessosEmAtrasado.add(processo)
                     }
 
                 }
+            
+            GerenciadorProcessos processoQueSeraExecutado = escalonadorInstancia.carregarProcesso()
 
-
-
-            GerenciadorProcessos next = scheduler.carregarProcesso()
-
-            if (next != null) {
-                scheduler.runProcess(next, memory, resources, clock)
+            if (processoQueSeraExecutado != null) {
+                escalonadorInstancia.executandoProcesso(processoQueSeraExecutado, memoriaInstancia, recursosInstancia)
             }
             println "Clock: ${clock}"
 
             clock++
         }
-
-        // Carregar estado inicial do disco
-        filesystem.carregaEstadoInicial(fileOpsFile)
-
-        // Executar operações
-        filesystem.executarOperacoes(fileOpsFile, scheduler.listaProcessos)
-
-        // Imprimir mapa final do disco
-        filesystem.imprimirMapaDoDisco()
+        
+        sistemaArquivosInstancia.carregaEstadoInicial(arquivoOperacoesArquivos)
+        sistemaArquivosInstancia.executarOperacoes(arquivoOperacoesArquivos, escalonadorInstancia.listaProcessoEncerrados)
+        sistemaArquivosInstancia.imprimirMapaDoDisco()
     }
 
 }

@@ -3,7 +3,6 @@ class GerenciadorArquivos {
     int tamanhoDoDisco
     int[] disco
 
-    // Map: filename -> [start, size, owner]
     Map<String, Map> arquivos = [:]
 
     void carregaEstadoInicial(File f) {
@@ -33,7 +32,7 @@ class GerenciadorArquivos {
         def linhas = arquivo.readLines()
         int quantidadeOcupada = linhas[1] as int
         def operacoes = linhas.drop(quantidadeOcupada + 2)
-
+        println "\nSistema de arquivos =>\n"
         operacoes.eachWithIndex { linha, indice ->
             def partes = linha.split(',').collect { it.trim() }
 
@@ -116,10 +115,10 @@ class GerenciadorArquivos {
         println '\nMapa de ocupação do disco:\n'
         disco.each { print("____")}
         print("_\n")
-        disco.each { it == 0 ? print("| 0 "): print("| "+(char)it+" ") }
+        disco.each { it == 0 ? print("|   "): print("| "+(char)it+" ") }
         print("|\n")
-        disco.each { print("____")}
-        print("\n")
+        disco.each { print("----")}
+        print("-\n")
     }
 
 }

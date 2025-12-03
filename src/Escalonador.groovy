@@ -1,68 +1,67 @@
 class Escalonador {
-    List<GerenciadorProcessos> fileTempoReal
-    Map<Integer, List<GerenciadorProcessos>> fileUsuario
-    Map<Integer, Integer> quantumTable
+    List<GerenciadorProcessos> filaTempoReal
+    Map<Integer, List<GerenciadorProcessos>> filaUsuario
+    Map<Integer, Integer> tabelaQuantum
 
-    List<GerenciadorProcessos> listaProcessos,listaProcessosEmAtrasado
+    List<GerenciadorProcessos> listaProcessos,listaProcessosEmAtrasado,listaProcessoEncerrados
 
     Escalonador() {
-        this.fileTempoReal  = []
-        this.fileUsuario = [
+        this.filaTempoReal  = []
+        this.filaUsuario = [
                 1: [], 2: [], 3: [], 4: [], 5: []
         ]
 
-        this.quantumTable  = [
+        this.tabelaQuantum  = [
                 1: 6, 2: 5, 3: 4, 4: 3, 5: 2
         ]
         this.listaProcessos  = []
         this.listaProcessosEmAtrasado = []
+        this.listaProcessoEncerrados = []
     }
-    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memory, GerenciadorRecursosAvancado resources) {
+    
+    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memoriaInstancia, GerenciadorRecursos recursosInstancia) {
 
-        // -----------------------------
         // ALOCAÇÃO DE MEMÓRIA
-        // -----------------------------
         if (processo.offsetMemoria == -1) {
-            boolean ok = memory.alocarBlocos(processo)
+            boolean ok = memoriaInstancia.alocarBlocos(processo)
             if (!ok) {
                 // sem memória → processo volta pra fila
-                //requeue(processo)
-
                 return
             }
         }
 
-        // -----------------------------
         // ALOCAÇÃO DE RECURSOS
-        // -----------------------------
-        if (!resources.tryAllocate(processo)) {
+        if (!recursosInstancia.tentandoAlocar(processo)) {
             // não conseguiu I/O → devolve para fila
-            //requeue(processo)
             if (listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 0 )
                 this.listaProcessosEmAtrasado.add(processo)
             return
         }
-        println this.formatProcessCreation(processo)
+        println this.exibirProcessoCriado(processo)
 
-        // inserindo processo na fila
+
         listaProcessos << processo
 
         if (processo.prioridade == 0) {
-            fileTempoReal << processo
+            filaTempoReal << processo
         }
         else {
-            fileUsuario[processo.prioridade] << processo
+            filaUsuario[processo.prioridade] << processo
         }
     }
     
     GerenciadorProcessos carregarProcesso() {
-        if (!fileTempoReal.isEmpty()) {
-            return fileTempoReal.remove(0)
+        if(listaProcessos.isEmpty()){
+            return null
+        }
+
+        if (!filaTempoReal.isEmpty()) {
+            return filaTempoReal.remove(0)
         }
 
         for (int prioridade = 1; prioridade <= 5; prioridade++) {
-            if (!fileUsuario[prioridade].isEmpty()) {
-                return fileUsuario[prioridade].remove(0)
+            if (!filaUsuario[prioridade].isEmpty()) {
+                return filaUsuario[prioridade].remove(0)
             }
         }
         return null
@@ -81,25 +80,21 @@ class Escalonador {
         }
     }
     
-//    void demote(GerenciadorProcessos processo) {
-//        if (processo.prioridade > 0 && processo.prioridade < 5) {
-//            processo.prioridade++
-//        }
-//    }
 
-    int getQuantum(GerenciadorProcessos processo) {
-        if (processo.prioridade == 0) return Integer.MAX_VALUE
-        return quantumTable[processo.prioridade]
+
+    int retornaTempoQuantum(GerenciadorProcessos processo) {
+        if (processo.prioridade == 0) return 100
+        return tabelaQuantum[processo.prioridade]
     }
 
-    boolean isDone(List<GerenciadorProcessos> all, int clock) {
+    static boolean jaAcabou(List<GerenciadorProcessos> all) {
         return all.every { it.tempoRestante <= 0 }
     }
 
-    String formatProcessCreation(GerenciadorProcessos processo) {
+    static String exibirProcessoCriado(GerenciadorProcessos processo) {
         GerenciadorMemoria memoria = new GerenciadorMemoria()
         return String.format(
-                'dispatcher =>\n' +
+                '\ndispatcher =>\n' +
                 '    PID: %-3d\n' +
                 '    offset: %-3d\n' +
                 '    blocks: %-3d\n' +
@@ -109,7 +104,6 @@ class Escalonador {
                 '    printers: %-2d\n' +
                 '    modems: %-2d\n' +
                 '    sata: %-2d\n',
-                //'Process P%-3d created | arrival=%-3d prio=%-2d cpu=%-3d mem=%-3d printer=%-2d scanner=%-2d modem=%-2d sata=%-2d',
                 processo.processoId,
                 processo.offsetMemoria,
                 processo.blocosDeMemoriaAlocados,
@@ -122,20 +116,19 @@ class Escalonador {
         )
     }
 
-    void runProcess(
+    void executandoProcesso(
             GerenciadorProcessos processo,
-            GerenciadorMemoria memory,
-            GerenciadorRecursosAvancado resources,
-            int clock
+            GerenciadorMemoria memoriaInstancia,
+            GerenciadorRecursos recursosInstancia
     ) {
 
         // troca de contexto
-        int[]  contextoDeMemoria =  memory.memoria.findAll { int bloco -> bloco == processo.processoId}
+        int[]  contextoDeMemoria =  memoriaInstancia.memoria.findAll { int bloco -> bloco == processo.processoId}
 
         // Marca início
         processo.printStart()
 
-        int quantum = getQuantum(processo)
+        int quantum = retornaTempoQuantum(processo)
         int used = 0
 
         // Executa até quantum expirar ou terminar
@@ -148,29 +141,26 @@ class Escalonador {
         // TERMINOU?
         if (processo.tempoRestante <= 0) {
             processo.printEnd()
-            memory.free(processo)
-            resources.free(processo)
+            memoriaInstancia.liberarBlocos(processo)
+            recursosInstancia.liberarRecursos(processo)
+            listaProcessoEncerrados.add(listaProcessos.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.remove(0))
             listaProcessos = listaProcessos.findAll { GerenciadorProcessos processos -> processos.processoId != processo.processoId}
+
             return
         }
 
-        // NÃO TERMINOU → rebaixa prioridade (se user)
-//        demote(processo)
-
-        // reaplica aging global
         balanceamentoDeProcessos()
 
-        // devolve processo à fila
-        requeue(processo)
+        retornaFila(processo)
     }
 
     // devolve processo para a fila correta
-    void requeue(GerenciadorProcessos processo) {
+    void retornaFila(GerenciadorProcessos processo) {
         if (processo.prioridade == 0) {
-            fileTempoReal << processo
+            filaTempoReal << processo
         }
         else {
-            fileUsuario[processo.prioridade] << processo
+            filaUsuario[processo.prioridade] << processo
         }
     }
 
