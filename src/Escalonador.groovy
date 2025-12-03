@@ -3,7 +3,7 @@ class Escalonador {
     Map<Integer, List<GerenciadorProcessos>> filaUsuario
     Map<Integer, Integer> tabelaQuantum
 
-    List<GerenciadorProcessos> listaProcessos,listaProcessosEmAtrasado,listaProcessoEncerrados
+    List<GerenciadorProcessos> listaProcessos,listaProcessosEmAtrasado,listaProcessoEncerrados,listaDeProcessosCancelados,listaArquivoProcessos
 
     Escalonador() {
         this.filaTempoReal  = []
@@ -17,10 +17,21 @@ class Escalonador {
         this.listaProcessos  = []
         this.listaProcessosEmAtrasado = []
         this.listaProcessoEncerrados = []
+        this.listaDeProcessosCancelados = []
     }
     
-    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memoriaInstancia, GerenciadorRecursos recursosInstancia) {
+    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memoriaInstancia, GerenciadorRecursos recursosInstancia,List<GerenciadorProcessos> ListaArquivoProcessos) {
 
+        if ((processo.prioridade == 0)&&(processo.blocosDeMemoriaAlocados < 1 ||processo.blocosDeMemoriaAlocados > 64 )){
+            println("Processo bloqueado, quantidade de blocos não pode ser atentida")
+            this.listaArquivoProcessos = ListaArquivoProcessos.findAll{ GerenciadorProcessos processos -> processos.processoId != processo.processoId}
+            listaDeProcessosCancelados.add(processo)
+            return
+        }else if ((processo.prioridade == 1)&&(processo.blocosDeMemoriaAlocados < 1 ||processo.blocosDeMemoriaAlocados > 960 )){
+            println("Processo bloqueado, quantidade de blocos não pode ser atentida")
+            this.listaArquivoProcessos = ListaArquivoProcessos.findAll{ GerenciadorProcessos processos -> processos.processoId != processo.processoId}
+            listaDeProcessosCancelados.add(processo)
+        }
         // ALOCAÇÃO DE MEMÓRIA
         if (processo.offsetMemoria == -1) {
             boolean ok = memoriaInstancia.alocarBlocos(processo)

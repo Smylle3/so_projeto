@@ -115,7 +115,7 @@ class GerenciadorArquivos {
         println '\nMapa de ocupação do disco:\n'
         disco.each { print("____")}
         print("_\n")
-        disco.each { it == 0 ? print("|   "): print("| "+(char)it+" ") }
+        disco.each { it == 0 ? print("| 0 "): print("| "+(char)it+" ") }
         print("|\n")
         disco.each { print("----")}
         print("-\n")

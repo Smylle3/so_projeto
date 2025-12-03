@@ -19,26 +19,26 @@ class Dispatcher {
         GerenciadorRecursos recursosInstancia = new GerenciadorRecursos()
         GerenciadorArquivos sistemaArquivosInstancia = new GerenciadorArquivos()
 
-        List<GerenciadorProcessos> processos = GerenciadorProcessos.processarArquivo(arquivoProcessos)
+        escalonadorInstancia.listaArquivoProcessos = GerenciadorProcessos.processarArquivo(arquivoProcessos)
 
         int clock = 0
 
-        while (!escalonadorInstancia.jaAcabou(processos)) {
+        while (!escalonadorInstancia.jaAcabou(escalonadorInstancia.listaArquivoProcessos )) {
             // adicionar processos que chegam neste instante
 
             if (escalonadorInstancia.listaProcessosEmAtrasado.size() > 0){
                 escalonadorInstancia.listaProcessosEmAtrasado.each { GerenciadorProcessos processo ->
                     if (escalonadorInstancia.listaProcessos.size() <= 99){
-                        escalonadorInstancia.criarProcesso(processo, memoriaInstancia, recursosInstancia)
+                        escalonadorInstancia.criarProcesso(processo, memoriaInstancia, recursosInstancia,escalonadorInstancia.listaArquivoProcessos )
                     }
                 }
             }
 
-            processos
-                .findAll { GerenciadorProcessos processo -> processo.tempoChegada == clock }
+            escalonadorInstancia.listaArquivoProcessos
+                    .findAll { GerenciadorProcessos processo -> processo.tempoChegada == clock }
                 .each { GerenciadorProcessos processo ->
                     if (escalonadorInstancia.listaProcessos.size() <= 99){
-                        escalonadorInstancia.criarProcesso(processo, memoriaInstancia, recursosInstancia)
+                        escalonadorInstancia.criarProcesso(processo, memoriaInstancia, recursosInstancia,escalonadorInstancia.listaArquivoProcessos )
                     }
                     else{
                         escalonadorInstancia.listaProcessosEmAtrasado.add(processo)
@@ -47,7 +47,9 @@ class Dispatcher {
                 }
             
             GerenciadorProcessos processoQueSeraExecutado = escalonadorInstancia.carregarProcesso()
-
+            if(clock == 9){
+                println("teste")
+            }
             if (processoQueSeraExecutado != null) {
                 escalonadorInstancia.executandoProcesso(processoQueSeraExecutado, memoriaInstancia, recursosInstancia)
             }
