@@ -13,4 +13,4 @@ Para compilar o projeto, basta rodar na pasta raiz:
 
 E para executar:
 
-    groovy -cp src src/Dispatcher.groovy processes.txt files.txt
+   ` groovy -cp src src/Dispatcher.groovy processes.txt files.txt`
