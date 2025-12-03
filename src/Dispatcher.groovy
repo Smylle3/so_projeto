@@ -47,9 +47,7 @@ class Dispatcher {
                 }
             
             GerenciadorProcessos processoQueSeraExecutado = escalonadorInstancia.carregarProcesso()
-            if(clock == 9){
-                println("teste")
-            }
+
             if (processoQueSeraExecutado != null) {
                 escalonadorInstancia.executandoProcesso(processoQueSeraExecutado, memoriaInstancia, recursosInstancia)
             }

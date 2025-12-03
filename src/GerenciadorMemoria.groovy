@@ -48,11 +48,7 @@ class GerenciadorMemoria {
     }
 
     void liberarBlocos(GerenciadorProcessos processo) {
-        if (processo.prioridade == 0){
-            ponteiroRT = memoria.findIndexOf { it == processo.processoId }
-        }else{
-            ponteiroUSR = memoria.findIndexOf { it == processo.processoId }
-        }
+
         memoria = memoria.collect { it == processo.processoId ? -1 : it }
 
 
