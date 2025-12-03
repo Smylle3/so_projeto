@@ -19,7 +19,7 @@ class Dispatcher {
 
         Escalonador scheduler = new Escalonador()
         GerenciadorMemoria memory = new GerenciadorMemoria()
-        GerenciadorRecursos resources = new GerenciadorRecursos()
+        GerenciadorRecursosAvancado resources = new GerenciadorRecursosAvancado()
         GerenciadorArquivos filesystem = new GerenciadorArquivos()
 
         List<GerenciadorProcessos> processos = GerenciadorProcessos.processarArquivo(processFile)

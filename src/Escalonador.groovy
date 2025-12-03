@@ -17,7 +17,7 @@ class Escalonador {
         this.listaProcessos  = []
         this.listaProcessosEmAtrasado = []
     }
-    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memory, GerenciadorRecursos resources) {
+    void criarProcesso(GerenciadorProcessos processo, GerenciadorMemoria memory, GerenciadorRecursosAvancado resources) {
 
         // -----------------------------
         // ALOCAÇÃO DE MEMÓRIA
@@ -35,7 +35,7 @@ class Escalonador {
         // -----------------------------
         // ALOCAÇÃO DE RECURSOS
         // -----------------------------
-        if (!resources.allocate(processo)) {
+        if (!resources.tryAllocate(processo)) {
             // não conseguiu I/O → devolve para fila
             //requeue(processo)
             if (listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 0 )
@@ -111,7 +111,7 @@ class Escalonador {
                 '    sata: %-2d\n',
                 //'Process P%-3d created | arrival=%-3d prio=%-2d cpu=%-3d mem=%-3d printer=%-2d scanner=%-2d modem=%-2d sata=%-2d',
                 processo.processoId,
-                processo.prioridade == 0 ? memoria.ponteiroRT : memoria.ponteiroUSR,
+                processo.offsetMemoria,
                 processo.blocosDeMemoriaAlocados,
                 processo.prioridade,
                 processo.tempoProcessamento,
@@ -125,10 +125,12 @@ class Escalonador {
     void runProcess(
             GerenciadorProcessos processo,
             GerenciadorMemoria memory,
-            GerenciadorRecursos resources,
+            GerenciadorRecursosAvancado resources,
             int clock
     ) {
 
+        // troca de contexto
+        int[]  contextoDeMemoria =  memory.memoria.findAll { int bloco -> bloco == processo.processoId}
 
         // Marca início
         processo.printStart()
@@ -137,7 +139,7 @@ class Escalonador {
         int used = 0
 
         // Executa até quantum expirar ou terminar
-        while (used < quantum && processo.tempoRestante > 0) {
+        while (used < quantum && processo.tempoRestante > 0 && contextoDeMemoria.size() == processo.blocosDeMemoriaAlocados) {
             processo.printInstruction(used + 1)
             processo.tempoRestante--
             used++
