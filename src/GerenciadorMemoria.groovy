@@ -15,8 +15,16 @@ class GerenciadorMemoria {
 
     // Alocar bloco contíguo
     boolean alocarBlocos(GerenciadorProcessos processo) {
+        if (ponteiroRT == 64 ){
+            ponteiroRT = 0
+        }
+        if (ponteiroUSR == 1023 ){
+            ponteiroUSR = 0
+        }
+
         int start = (processo.prioridade == 0) ? ponteiroRT : ponteiroUSR
         int end   = (processo.prioridade == 0) ? RT_END   : USR_END
+
 
         for (int i = start; i <= end - processo.blocosDeMemoriaAlocados + 1; i++) {
             if (espacoEstaDisponivel(i, processo.blocosDeMemoriaAlocados)) {
@@ -48,9 +56,6 @@ class GerenciadorMemoria {
     }
 
     void liberarBlocos(GerenciadorProcessos processo) {
-
         memoria = memoria.collect { it == processo.processoId ? -1 : it }
-
-
     }
 }
