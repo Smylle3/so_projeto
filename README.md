@@ -3,7 +3,7 @@
 ## Instalação das dependências
 
 Para executar o projeto será necessário instalar o Java, a partir da versão 17,
-e também groovy, a partir da versão 2.5.0
+e também Groovy, a partir da versão 2.5.0
 
 ## Executar o programa
 
