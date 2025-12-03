@@ -1,8 +1,16 @@
-# so_projeto
+# Projeto de Sistemas Operacionais - Grupo 5
 
-dispatcher.groovy	-> Ponto de entrada, orquestra tudo, escalona, imprime logs
-Process.groovy	-> Modelo do processo (dados e simulação básica)
-Scheduler.groovy	-> Filas, prioridades, aging, quantum, MLFQ
-MemoryManager.groovy	-> 1024 blocos, first-fit, RT/Usuário, offset
-ResourceManager.groovy	-> Scanner, printer, modem, SATA (exclusão mútua)
-FileSystemManager.groovy	-> Disco, arquivos, alocação contígua, operações
+## Instalação das dependências
+
+Para executar o projeto será necessário instalar o Java, a partir da versão 17,
+e também groovy, a partir da versão 2.5.0
+
+## Executar o programa
+
+Para compilar o projeto, basta rodar na pasta raiz:
+
+    groovyc -d out src/*.groovy
+
+E para executar:
+
+    groovy -cp src src/Dispatcher.groovy processes.txt files.txt
