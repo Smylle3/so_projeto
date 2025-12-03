@@ -19,7 +19,7 @@ class GerenciadorMemoria {
             ponteiroRT = 0
         }
         if (ponteiroUSR >= 1023 ){
-            ponteiroUSR = 0
+            ponteiroUSR = 64
         }
 
         int start = (processo.prioridade == 0) ? ponteiroRT : ponteiroUSR

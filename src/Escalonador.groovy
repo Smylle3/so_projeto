@@ -62,6 +62,9 @@ class Escalonador {
         else {
             filaUsuario[processo.prioridade] << processo
         }
+
+        if (listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 1 && listaProcessos.findAll { GerenciadorProcessos processos -> processos.processoId == processo.processoId}.size() == 1)
+            this.listaProcessosEmAtrasado= listaProcessosEmAtrasado.findAll { GerenciadorProcessos processos -> processos.processoId != processo.processoId}
     }
     
     GerenciadorProcessos carregarProcesso() {
